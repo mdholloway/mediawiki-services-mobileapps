@@ -2,6 +2,7 @@
 
 const sUtil = require('../lib/util');
 const swaggerUi = require('../lib/swagger-ui');
+const spawn = require('child_process').spawn;
 
 /**
  * The main router object
@@ -41,6 +42,40 @@ router.get('/', (req, res, next) => {
         next();
     }
 
+});
+
+/**
+ * GET /ri-diff-fixture-updater/
+ * Special entrypoint for ri-diffbot
+ */
+router.get('/ri-diff-fixture-updater/', (req, res, next) => {
+
+    const diffProcess = spawn(`git reset --hard origin/master \
+&& git pull
+&& rm -rf node_modules
+&& npm install \
+&& export DIFF_UPDATE=true \
+&& npm run test:diff \
+&& git commit -a -m "Hygiene: Update diff fixtures \
+&& git review -Ry`);
+
+    diffProcess.stdout.on('data', (data) => {
+        res.write(data);
+        req.logger.log('info', data.toString());
+    });
+
+    diffProcess.stderr.on('data', (data) => {
+        res.write(data);
+        req.logger.log('error', data.toString());
+    });
+
+    diffProcess.on('exit', (code) => {
+        req.logger.log('exit: child process exited with code ' + code.toString());
+    });
+
+    diffProcess.on('close', (code) => {
+        req.logger.log('close: child process exited with code ' + code.toString());
+    });
 });
 
 module.exports = (appObj) => {
