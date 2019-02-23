@@ -246,6 +246,9 @@ function loadPreProcessingScripts(app, dir) {
  * @return {bluebird} a promise creating the web server
  */
 function createServer(app) {
+    // HACK: For Toolforge, programmatically update the config object with the value provided
+    // by the execution environment
+    app.conf.port = process.env.PORT;
 
     // return a promise which creates an HTTP server,
     // attaches the app to it, and starts accepting
