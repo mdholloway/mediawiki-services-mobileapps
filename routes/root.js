@@ -50,14 +50,7 @@ router.get('/', (req, res, next) => {
  */
 router.get('/ri-diff-fixture-updater/', (req, res, next) => {
 
-    const diffProcess = spawn(`git reset --hard origin/master \
-&& git pull
-&& rm -rf node_modules
-&& npm install \
-&& export DIFF_UPDATE=true \
-&& npm run test:diff \
-&& git commit -a -m "Hygiene: Update diff fixtures \
-&& git review -Ry`);
+    const diffProcess = spawn('update_diff_fixtures');
 
     diffProcess.stdout.on('data', (data) => {
         res.write(data);
